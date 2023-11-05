@@ -9,12 +9,24 @@ const port = 3000; // You can use any port you prefer
 app.use(express.json());
 app.use(cors());
 
-// Load your JSON data from the file
-const jsonData = JSON.parse(fs.readFileSync("questions.json", "utf8"));
-
 // Define a route to get all questions
 app.get("/questions", (req, res) => {
-  res.json(jsonData);
+  fs.readFile('questions.json', 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading the JSON file:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
+    try {
+      const jsonData = JSON.parse(data);
+      const extractedQuestions = jsonData.questions;
+      res.json(extractedQuestions);
+    } catch (parseError) {
+      console.error('Error parsing JSON data:', parseError);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 });
 
 app.listen(port, () => {
